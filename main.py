@@ -5,10 +5,14 @@ import models
 from models import Books, Users
 from database import SessionLocal, engine
 from fastapi.responses import JSONResponse
+from router import admin, auth
+from router.auth import get_current_user
 
 app = FastAPI()
 
 models.Base.metadata.create_all(bind=engine)
+app.include_router(auth.router)
+# app.include_router(admin.router)
 
 def get_db():
     db = SessionLocal()
@@ -18,6 +22,7 @@ def get_db():
         db.close()
 
 db_dependency = Annotated[Session, Depends(get_db)]
+user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
 @app.get('/books/all')
