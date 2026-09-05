@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import Annotated, Optional
 import models
-from models import Books, Users
+from models import Books, Users, Reservation
 from database import SessionLocal, engine
 from fastapi.responses import JSONResponse
 from router import admin, auth
@@ -42,3 +42,21 @@ def get_all_books(user : user_dependency, db : db_dependency, book_id: int):
     
     book = db.query(Books).filter(Books.id == book_id).first()
     return book
+
+@app.post('/reserve/{book_id}')
+def reserve_book(user: user_dependency, db: db_dependency, book_id: int):
+    if user is None:
+        raise HTTPException(status_code=401, detail='Failed Authentication')
+    book = db.query(Books).filter(Books.id == book_id).first()
+    if book is None:
+        raise HTTPException(status_code=404, detail='Book not found')
+    reservation_model = Reservation(
+        book_id = book_id,
+        user_id = user.get('id'),
+        status = 'panding'
+    )
+
+    db.add(reservation_model)
+    db.commit()
+
+    return JSONResponse(status_code=201, content={'message': 'Book reserved Successfully'})

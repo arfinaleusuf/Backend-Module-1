@@ -1,5 +1,5 @@
 from database import Base
-from sqlalchemy import Column, String, Integer, Boolean, Float,DateTime
+from sqlalchemy import Column, String, Integer, Boolean, Float, DateTime, ForeignKey
 from datetime import datetime
 
 class Users(Base):
@@ -27,3 +27,13 @@ class Books(Base):
     available_copies = Column(Integer, default=3)
     cover_image = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.now)
+
+
+class Reservation(Base):
+    __tablename__ = 'reservations'
+
+    id = Column(Integer, primary_key=True, index=True)
+    book_id = Column(Integer, ForeignKey('books.id'))
+    user_id = Column(Integer, ForeignKey('users.id'))
+    reservation_date = Column(DateTime, default=datetime.now)
+    status = Column(String, default='pending')
